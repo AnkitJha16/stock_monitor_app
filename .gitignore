@@ -18,3 +18,6 @@ logs/
 # VS Code
 .vscode/
 .vscode/*.code-workspace
+
+*/.gitignore
+*/README.md
