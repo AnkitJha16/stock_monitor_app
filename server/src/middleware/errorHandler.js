@@ -2,6 +2,7 @@
 
 const logger = require("../../utils/logger"); // Import our Winston logger
 
+const AppError = require("../utils/appError");
 /**
  * Centralized error handling middleware for Express.
  * This middleware catches errors passed via next(err) and sends a standardized error response.
@@ -12,42 +13,52 @@ const logger = require("../../utils/logger"); // Import our Winston logger
  * @param {function} next - The next middleware function in the stack.
  */
 const errorHandler = (err, req, res, next) => {
-  // Log the error for debugging purposes (internal server error usually)
-  // We check for err.status to differentiate between operational errors (like 400, 401)
-  // and unexpected errors (like 500).
-  if (
-    err.status !== 400 &&
-    err.status !== 401 &&
-    err.status !== 403 &&
-    err.status !== 404
-  ) {
-    logger.error(`Unhandled error: ${err.message}`, {
+  // 1. Determine if the error is operational or a programming error
+  // Operational errors are expected (e.g., bad user input, unauthorized).
+  // Programming errors are unexpected bugs (e.g., trying to read undefined property).
+  // REPLACE FROM HERE:
+  if (!err.isOperational) {
+    // Check if the error is NOT operational
+    // If it's a programming or unknown error, log it comprehensively at 'error' level
+    logger.error(`UNHANDLED PROGRAMMING ERROR: ${err.message}`, {
       stack: err.stack,
       path: req.path,
       method: req.method,
       ip: req.ip,
-      // You can add more context here if needed, e.g., user ID, request body (carefully)
+      // Consider adding req.body or req.params for more context if relevant, but be mindful of sensitive data
     });
-  } else {
-    // Log operational errors at a 'warn' or 'info' level, as they are often expected
-    // user-facing issues (e.g., bad request, unauthorized)
-    logger.warn(`Operational error: ${err.status} - ${err.message}`, {
-      path: req.path,
-      method: req.method,
-      ip: req.ip,
+
+    // For programming errors, send a generic 500 message in production
+    // This prevents leaking sensitive details about internal server issues
+    return res.status(500).json({
+      status: "error",
+      message:
+        "An unexpected internal server error occurred. Please try again later.",
+      // Include stack trace only in development for debugging
+      ...(process.env.NODE_ENV !== "production" && { stack: err.stack }),
     });
   }
 
-  // Determine the status code and message to send back to the client
-  const statusCode = err.status || 500; // Use the error's status if available, otherwise default to 500 (Internal Server Error)
-  const message = err.expose // err.expose is a property from 'http-errors' or similar libraries
-    ? err.message // If 'expose' is true, it's safe to send the message to the client
-    : "An unexpected error occurred."; // Otherwise, send a generic message for security
+  // 2. Handle operational errors (e.g., AppError instances, or errors with status codes)
+  // These errors have an 'isOperational' flag set to true (or a status code set).
+  const statusCode = err.statusCode || err.status || 500;
+  const status =
+    err.status || (statusCode >= 400 && statusCode < 500 ? "fail" : "error");
+  const message = err.message || "Something went wrong!";
+
+  // Log operational errors at a 'warn' level as they are less critical than programming errors
+  logger.warn(`Operational Error: ${statusCode} - ${message}`, {
+    path: req.path,
+    method: req.method,
+    ip: req.ip,
+    stack: process.env.NODE_ENV !== "production" ? err.stack : undefined, // Log stack for operational errors in dev
+  });
+  // TO HERE. The response body part below remains the same.
 
   // For development, you might want to send the stack trace for debugging.
   // In production, sending the stack trace is a security risk.
   const responseBody = {
-    status: statusCode,
+    status: status,
     message: message,
     // Only include stack in development
     ...(process.env.NODE_ENV !== "production" && { stack: err.stack }),
