@@ -4,6 +4,7 @@ const express = require("express");
 const router = express.Router();
 // const winston = require("winston"); // Import Winston for logging in this module
 const logger = require("../../utils/logger");
+const dataRoutes = require("./dataRoutes"); // Import the new data routes
 
 // Define a basic health check route
 // When this router is mounted under /api, this route will be /api/health
@@ -69,9 +70,13 @@ router.get("/test-error", (req, res, next) => {
     }
   } catch (error) {
     // For synchronous errors, pass them to the Express error handler
+
     next(error);
   }
 });
 // END ADDITION
+
+router.use("/data", dataRoutes);
+logger.info("Data routes mounted under /api/data.");
 
 module.exports = router;

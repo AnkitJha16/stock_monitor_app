@@ -3,28 +3,6 @@
 const { Pool } = require("pg");
 const logger = require("../../utils/logger"); // Assuming our central logger is available here
 
-// --- START: ADD THESE LINES HERE ---
-// These lines will log the values of your environment variables as seen by Node.js
-// logger.debug(`DB_HOST: ${process.env.DB_HOST}`);
-// logger.debug(`DB_PORT: ${process.env.DB_PORT}`); // Note: DB_PORT should typically be a number, but process.env provides strings. pg client handles this.
-// logger.debug(`DB_USER: ${process.env.DB_USER}`);
-// logger.debug(`DB_DATABASE: ${process.env.DB_DATABASE}`);
-// // Be careful with logging passwords directly in production! This is for temporary debugging.
-// logger.debug(
-//   `DB_PASSWORD (length): ${
-//     process.env.DB_PASSWORD ? process.env.DB_PASSWORD.length : "N/A"
-//   }`
-// );
-// logger.debug(
-//   `DB_PASSWORD (first 5 chars): ${
-//     process.env.DB_PASSWORD
-//       ? process.env.DB_PASSWORD.substring(0, 5) + "..."
-//       : "N/A"
-//   }`
-// );
-// logger.debug(`DB_PASSWORD (type): ${typeof process.env.DB_PASSWORD}`);
-// --- END: ADD THESE LINES HERE ---
-
 // Create a new Pool instance using environment variables
 const pool = new Pool({
   host: process.env.DB_HOST,

@@ -9,25 +9,6 @@ const logger = require("./utils/logger");
 const { connectDb, closeDb, testDbInsert } = require("./src/config/db"); // ADD this line to import DB functions
 const errorHandler = require("./src/middleware/errorHandler"); // ADD THIS LINE
 
-// ***--- NEW: Configure Winston Logger ---
-// const logger = winston.createLogger({
-//   level: "info", // Set the default logging level. 'info' logs info, warn, and error.
-//   format: winston.format.combine(
-//     winston.format.timestamp(), // Add a timestamp to each log entry
-//     winston.format.json() // Output logs in JSON format for easy parsing by log aggregators
-//   ),
-//   transports: [
-//     // Transport for writing all logs (info, warn, error) to a combined file
-//     new winston.transports.File({ filename: "logs/combined.log" }),
-//     // Transport for writing only error level logs to a separate error file
-//     new winston.transports.File({ filename: "logs/error.log", level: "error" }),
-//     // Optional: For development, you might still want console output.
-//     // We'll keep this commented out for now as you preferred file logging.
-//     new winston.transports.Console({ format: winston.format.simple() }),
-//   ],
-// });
-// --- END NEW: Configure Winston Logger ---
-
 // **--- NEW: Import our main API routes ---
 const apiRoutes = require("./src/routes"); // This will automatically look for src/routes/index.js
 // --- END NEW: Import routes ---
@@ -44,29 +25,10 @@ const server = http.createServer(app);
 
 setupGlobalMiddleware(app, logger);
 
-// *** Middleware for Configuring CORS for Express
-// This allows your frontend (which will run on a different port, e.g., 5173) to make requests to your backend.
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173", // IMPORTANT: This must match your React app's development server URL.
-//     // Vite typically runs React apps on port 5173 by default.
-//   })
-// );
-
-// *** Middleware to parse JSON bodies from incoming requests
-// app.use(express.json());
-
-// *** Middleware to parse URL-encoded bodies (e.g., from HTML forms)
-// app.use(express.urlencoded({ extended: true }));
-
-//--- END NEW: General Middleware ---
-
 //** --- NEW: Mount API Routes ---
 // All routes defined in src/routes/index.js (and any other routers it imports)
 // will now be accessible under the /api path.
 app.use("/api", apiRoutes);
-
-// Optional: Keep a simple root route for browser access, but use /api/health for programmatic checks
 
 // Define a basic route for the root URL
 // When you visit http://localhost:3001 in your browser, this message will be displayed.
@@ -113,7 +75,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// ADD THIS ENTIRE SECTION: ERROR HANDLING MIDDLEWARE
 // IMPORTANT: This must be placed AFTER all other routes and middleware
 // to catch any errors that occur within them.
 app.use(errorHandler);
