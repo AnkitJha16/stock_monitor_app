@@ -3,20 +3,30 @@
 const express = require("express");
 const router = express.Router();
 const logger = require("../../utils/logger"); // Import our central logger
+// --- ADD THIS LINE ---
+const lookupController = require("../controllers/lookupController"); // Import our new lookup controllers
+// --- END ADDITION ---
+// --- ADD THIS LINE ---
+const instrumentController = require("../controllers/instrumentController"); // Import our instrument controller
+// --- END ADDITION ---
 
 // --- Instruments Route ---
 // Fetches the master list of all Fyers instruments from our internal database.
 // This data would typically be populated from the Fyers /instruments API and stored locally.
-router.get("/instruments", (req, res, next) => {
-  logger.info("GET /api/data/instruments endpoint accessed.");
-  // TODO: Implement logic to fetch instruments from PostgreSQL database
-  // For now, sending a placeholder response
-  res.status(200).json({
-    status: "success",
-    message: "This endpoint will return the list of all instruments.",
-    data: [], // Placeholder for instrument data
-  });
-});
+// --- REPLACED CODE ---
+router.get("/instruments", instrumentController.getAllInstruments);
+// --- END REPLACEMENT ---
+
+// router.get("/instruments", (req, res, next) => {
+//   logger.info("GET /api/data/instruments endpoint accessed.");
+//   // TODO: Implement logic to fetch instruments from PostgreSQL database
+//   // For now, sending a placeholder response
+//   res.status(200).json({
+//     status: "success",
+//     message: "This endpoint will return the list of all instruments.",
+//     data: [], // Placeholder for instrument data
+//   });
+// });
 
 // --- Market Status Route ---
 // Checks the market status (open/close) for various segments.
@@ -107,5 +117,12 @@ router.get("/history/:symbol", (req, res, next) => {
     ],
   });
 });
+
+// --- NEW: Routes for Lookup Tables ---
+// These endpoints will fetch static lookup data from our PostgreSQL database.
+router.get("/exchanges", lookupController.getAllExchanges);
+router.get("/segments", lookupController.getAllSegments);
+router.get("/instrument-types", lookupController.getAllInstrumentTypes);
+// --- END NEW ROUTES ---
 
 module.exports = router;

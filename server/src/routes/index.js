@@ -76,6 +76,52 @@ router.get("/test-error", (req, res, next) => {
 });
 // END ADDITION
 
+// NEW: Route to fetch Fyers Instruments using Sequelize
+// router.get("/instruments", async (req, res, next) => {
+//   try {
+//     // Access the FyersInstrument model via app.locals.db
+//     const FyersInstrument = req.app.locals.db.FyersInstrument;
+
+//     // Fetch all instruments from the fyers_instruments table
+//     const instruments = await FyersInstrument.findAll();
+
+//     logger.info("Successfully fetched Fyers instruments.", {
+//       count: instruments.length,
+//     });
+//     res.status(200).json(instruments);
+//   } catch (error) {
+//     logger.error("Error fetching Fyers instruments:", error);
+//     // Pass the error to the Express error handling middleware
+//     next(error);
+//   }
+// });
+
+// router.get("/instruments", async (req, res, next) => {
+//   try {
+//     const sequelize = req.app.locals.db.sequelize; // Access the raw sequelize instance
+
+//     // Temporarily query a system table that MUST exist in any PostgreSQL database
+//     const result = await sequelize.query("SELECT version();", {
+//       type: sequelize.QueryTypes.SELECT,
+//     });
+
+//     // You can also try listing tables directly
+//     // const result = await sequelize.query(
+//     //   "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';",
+//     //   { type: sequelize.QueryTypes.SELECT }
+//     // );
+
+//     logger.info("Successfully executed raw query:", result);
+//     res.status(200).json({
+//       message: "Raw query successful",
+//       data: result,
+//     });
+//   } catch (error) {
+//     logger.error("Error executing raw query:", error);
+//     next(error);
+//   }
+// });
+
 router.use("/data", dataRoutes);
 logger.info("Data routes mounted under /api/data.");
 

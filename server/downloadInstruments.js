@@ -5,10 +5,22 @@ const https = require("https"); // For making HTTPS requests
 
 const dataDir = path.join(__dirname, "data"); // Path to the new 'data' folder
 const instrumentUrls = {
+  // --- UPDATED: ALL JSON files for all segments ---
   "NSE_CM_sym_master.json":
-    "https://public.fyers.in/sym_details/NSE_CM_sym_master.json", // NSE - Equity
+    "https://public.fyers.in/sym_details/NSE_CM_sym_master.json", // NSE - Capital Market (Equity)
   "BSE_CM_sym_master.json":
-    "https://public.fyers.in/sym_details/BSE_CM_sym_master.json", // BSE - Equity
+    "https://public.fyers.in/sym_details/BSE_CM_sym_master.json", // BSE - Capital Market (Equity)
+  "NSE_FO_sym_master.json":
+    "https://public.fyers.in/sym_details/NSE_FO_sym_master.json", // NSE - Equity Derivatives (Futures & Options)
+  "NSE_CD_sym_master.json":
+    "https://public.fyers.in/sym_details/NSE_CD_sym_master.json", // NSE - Currency Derivatives
+  "MCX_COM_sym_master.json":
+    "https://public.fyers.in/sym_details/MCX_COM_sym_master.json", // MCX - Commodity Derivatives
+  "BSE_FO_sym_master.json":
+    "https://public.fyers.in/sym_details/BSE_FO_sym_master.json", // BSE - Equity Derivatives (Futures & Options)
+  "NSE_COM_sym_master.json":
+    "https://public.fyers.in/sym_details/NSE_COM_sym_master.json", // NSE - Commodity (Futures & Options)
+  // --- END UPDATED URLS ---
 };
 
 async function downloadFile(url, destinationPath) {

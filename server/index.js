@@ -6,6 +6,10 @@ const { Server } = require("socket.io"); // Socket.IO Server class
 // const cors = require("cors"); // CORS middleware
 const logger = require("./utils/logger");
 // const winston = require("winston"); // NEW: Import Winston
+
+const { connectSequelize } = require("./src/config/sequelize"); // Import the connection function
+const db = require("./src/models"); // Import your models
+
 const { connectDb, closeDb, testDbInsert } = require("./src/config/db"); // ADD this line to import DB functions
 const errorHandler = require("./src/middleware/errorHandler"); // ADD THIS LINE
 
@@ -89,16 +93,34 @@ server.listen(PORT, async () => {
   //   console.log(`Backend server running on port ${PORT}`);
   logger.info(`Backend server running on port ${PORT}`);
   // --- NEW: Attempt to connect to the database ---
-  await connectDb(); // Call the connectDb function
-  // --- END NEW ---
-  // await testDbInsert(); // CALL THE NEW TEST FUNCTION HERE
+  try {
+    // --- old method using direct SQL Queries
+    // await connectDb(); // Call the connectDb function
+    await connectSequelize(); // Call the Sequelize connection function
+    // --- END NEW ---
+
+    // This allows you to access models like req.app.locals.db.FyersInstrument in your route handlers
+    app.locals.db = db;
+    // 'db' object contains all your Sequelize models and the sequelize instance
+
+    // You can still call testDbInsert() if needed for initial testing, but it uses the old connection.
+    // await testDbInsert(); // CALL THE NEW TEST FUNCTION HERE
+  } catch (error) {
+    logger.error(
+      "Failed to start server due to database connection error:",
+      error
+    );
+    process.exit(1); // Exit process if DB connection fails}
+  }
 });
 
 // NEW: Add a handler for server shutdown events to gracefully close the DB connection
 process.on("SIGINT", async () => {
   // Handle Ctrl+C (SIGINT)
   logger.info("SIGINT signal received: Shutting down gracefully...");
-  await closeDb(); // Close database connection
+
+  // await closeDb(); // Close database connection old code
+  await db.sequelize.close(); // Close Sequelize database connection
   server.close(() => {
     // Close HTTP server
     logger.info("HTTP server closed.");
@@ -109,7 +131,10 @@ process.on("SIGINT", async () => {
 process.on("SIGTERM", async () => {
   // Handle termination signals (e.g., from process managers)
   logger.info("SIGTERM signal received: Shutting down gracefully...");
-  await closeDb(); // Close database connection
+
+  // await closeDb(); // Close database connection old code
+  await db.sequelize.close(); // Close Sequelize database connection
+
   server.close(() => {
     // Close HTTP server
     logger.info("HTTP server closed.");
@@ -132,8 +157,10 @@ process.on("unhandledRejection", async (reason, promise) => {
     "Unhandled Rejection: Attempting graceful Shut down and exiting..."
   );
   try {
-    // Attempt to close DB connection first
-    await closeDb();
+    // Attempt to close DB connection old code
+    // await closeDb();
+
+    await db.sequelize.close(); // Close Sequelize database connection
 
     // Attempt to close HTTP server gracefully
     server.close(() => {
@@ -171,8 +198,10 @@ process.on("uncaughtException", async (error) => {
     "Uncaught Exception: Attempting graceful shutdown and exiting..."
   );
   try {
-    // Attempt to close DB connection first
-    await closeDb();
+    // Attempt to close DB connection first (old code)
+    // await closeDb();
+
+    await db.sequelize.close();
 
     // Attempt to close HTTP server gracefully
     server.close(() => {

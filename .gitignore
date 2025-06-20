@@ -12,6 +12,9 @@ yarn-error.log
 logs/
 *.log
 
+# data
+# data/
+
 # macOS
 .DS_Store
 
@@ -21,3 +24,4 @@ logs/
 
 */.gitignore
 */README.md
+
